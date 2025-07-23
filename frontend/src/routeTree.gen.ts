@@ -19,7 +19,9 @@ import { Route as LayoutImport } from './routes/_layout'
 import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
+import { Route as LayoutColpaliImport } from './routes/_layout/colpali'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
+import { Route as LayoutColpaliIndexImport } from './routes/_layout/colpali/index'
 
 // Create/Update Routes
 
@@ -63,9 +65,19 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutColpaliRoute = LayoutColpaliImport.update({
+  path: '/colpali',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutAdminRoute = LayoutAdminImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutColpaliIndexRoute = LayoutColpaliIndexImport.update({
+  path: '/',
+  getParentRoute: () => LayoutColpaliRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -96,6 +108,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/colpali': {
+      preLoaderRoute: typeof LayoutColpaliImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/items': {
       preLoaderRoute: typeof LayoutItemsImport
       parentRoute: typeof LayoutImport
@@ -108,6 +124,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/colpali/': {
+      preLoaderRoute: typeof LayoutColpaliIndexImport
+      parentRoute: typeof LayoutColpaliImport
+    }
   }
 }
 
@@ -116,6 +136,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
+    LayoutColpaliRoute.addChildren([LayoutColpaliIndexRoute]),
     LayoutItemsRoute,
     LayoutSettingsRoute,
     LayoutIndexRoute,
