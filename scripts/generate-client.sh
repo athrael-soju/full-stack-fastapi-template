@@ -4,7 +4,9 @@ set -x
 cd backend
 python -c "import app.main; import json; print(json.dumps(app.main.app.openapi()))" > ../openapi.json
 
-mv openapi.json ../frontend/
+cd ..
+
+mv openapi.json frontend/
 
 cd frontend
 npm run generate-client
