@@ -35,7 +35,7 @@ export function DashboardHeader() {
       <div className="flex items-center space-x-4">
         <SidebarTrigger />
       </div>
-
+ 
       <div className="flex items-center">
         <ThemeToggle />
         <DropdownMenu>
