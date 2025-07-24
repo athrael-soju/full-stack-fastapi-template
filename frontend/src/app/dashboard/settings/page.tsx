@@ -1,22 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { User, Lock, AlertTriangle, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react"
+import type { UpdatePassword, UserPublic, UserUpdate } from "@/client/types.gen"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
+  usersDeleteUserMe,
   usersReadUserMe,
-  usersUpdateUserMe,
   usersUpdatePasswordMe,
-  usersDeleteUserMe
+  usersUpdateUserMe,
 } from "@/lib/api-client"
-import type { UserPublic, UserUpdate, UpdatePassword } from "@/client/types.gen"
+import {
+  AlertCircle,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  User,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface UserSettingsState {
   user: UserPublic | null
@@ -41,20 +56,20 @@ export default function SettingsPage() {
     user: null,
     loading: true,
     error: null,
-    success: null
+    success: null,
   })
-  
+
   const [profileData, setProfileData] = useState<ProfileFormData>({
     full_name: "",
-    email: ""
+    email: "",
   })
-  
+
   const [passwordData, setPasswordData] = useState<PasswordFormData>({
     current_password: "",
     new_password: "",
-    confirm_password: ""
+    confirm_password: "",
   })
-  
+
   const [profileLoading, setProfileLoading] = useState(false)
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -64,38 +79,39 @@ export default function SettingsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   const getAuthToken = () => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem("access_token")
     if (!token) {
-      throw new Error('No authentication token found')
+      throw new Error("No authentication token found")
     }
     return token
   }
 
   const updateState = (updates: Partial<UserSettingsState>) => {
-    setState(prev => ({ ...prev, ...updates }))
+    setState((prev) => ({ ...prev, ...updates }))
   }
 
   const fetchCurrentUser = async () => {
     try {
       updateState({ loading: true, error: null })
       const token = getAuthToken()
-      
+
       const response = await usersReadUserMe({
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (response.data) {
         updateState({ user: response.data, loading: false })
         setProfileData({
           full_name: response.data.full_name || "",
-          email: response.data.email
+          email: response.data.email,
         })
       }
     } catch (error) {
-      console.error('Fetch user error:', error)
+      console.error("Fetch user error:", error)
       updateState({
-        error: error instanceof Error ? error.message : 'Failed to fetch user data',
-        loading: false
+        error:
+          error instanceof Error ? error.message : "Failed to fetch user data",
+        loading: false,
       })
     }
   }
@@ -106,7 +122,7 @@ export default function SettingsPage() {
 
   const handleUpdateProfile = async () => {
     if (!profileData.full_name.trim() || !profileData.email.trim()) {
-      updateState({ error: 'Full name and email are required' })
+      updateState({ error: "Full name and email are required" })
       return
     }
 
@@ -114,41 +130,51 @@ export default function SettingsPage() {
       setProfileLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const userData: UserUpdate = {
         full_name: profileData.full_name,
-        email: profileData.email
+        email: profileData.email,
       }
 
       const response = await usersUpdateUserMe({
         body: userData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (response.data) {
-        updateState({ user: response.data, success: 'Profile updated successfully' })
+        updateState({
+          user: response.data,
+          success: "Profile updated successfully",
+        })
       }
     } catch (error) {
-      console.error('Update profile error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to update profile' })
+      console.error("Update profile error:", error)
+      updateState({
+        error:
+          error instanceof Error ? error.message : "Failed to update profile",
+      })
     } finally {
       setProfileLoading(false)
     }
   }
 
   const handleUpdatePassword = async () => {
-    if (!passwordData.current_password || !passwordData.new_password || !passwordData.confirm_password) {
-      updateState({ error: 'All password fields are required' })
+    if (
+      !passwordData.current_password ||
+      !passwordData.new_password ||
+      !passwordData.confirm_password
+    ) {
+      updateState({ error: "All password fields are required" })
       return
     }
 
     if (passwordData.new_password !== passwordData.confirm_password) {
-      updateState({ error: 'New passwords do not match' })
+      updateState({ error: "New passwords do not match" })
       return
     }
 
     if (passwordData.new_password.length < 8) {
-      updateState({ error: 'New password must be at least 8 characters long' })
+      updateState({ error: "New password must be at least 8 characters long" })
       return
     }
 
@@ -156,26 +182,29 @@ export default function SettingsPage() {
       setPasswordLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const passwordUpdateData: UpdatePassword = {
         current_password: passwordData.current_password,
-        new_password: passwordData.new_password
+        new_password: passwordData.new_password,
       }
 
       await usersUpdatePasswordMe({
         body: passwordUpdateData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'Password updated successfully' })
+      updateState({ success: "Password updated successfully" })
       setPasswordData({
         current_password: "",
         new_password: "",
-        confirm_password: ""
+        confirm_password: "",
       })
     } catch (error) {
-      console.error('Update password error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to update password' })
+      console.error("Update password error:", error)
+      updateState({
+        error:
+          error instanceof Error ? error.message : "Failed to update password",
+      })
     } finally {
       setPasswordLoading(false)
     }
@@ -186,17 +215,20 @@ export default function SettingsPage() {
       setDeleteLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       await usersDeleteUserMe({
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       // Clear token and redirect to login
-      localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
     } catch (error) {
-      console.error('Delete account error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to delete account' })
+      console.error("Delete account error:", error)
+      updateState({
+        error:
+          error instanceof Error ? error.message : "Failed to delete account",
+      })
       setDeleteLoading(false)
     }
   }
@@ -205,7 +237,9 @@ export default function SettingsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            User Settings
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Manage your account settings and preferences.
           </p>
@@ -221,7 +255,9 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Settings</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          User Settings
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Manage your account settings and preferences.
         </p>
@@ -271,7 +307,12 @@ export default function SettingsPage() {
                   id="full-name"
                   placeholder="Enter your full name..."
                   value={profileData.full_name}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, full_name: e.target.value }))}
+                  onChange={(e) =>
+                    setProfileData((prev) => ({
+                      ...prev,
+                      full_name: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -281,7 +322,12 @@ export default function SettingsPage() {
                   type="email"
                   placeholder="Enter your email address..."
                   value={profileData.email}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setProfileData((prev) => ({
+                      ...prev,
+                      email: e.target.value,
+                    }))
+                  }
                 />
               </div>
               <div className="flex justify-end">
@@ -292,7 +338,7 @@ export default function SettingsPage() {
                       Updating...
                     </>
                   ) : (
-                    'Update Profile'
+                    "Update Profile"
                   )}
                 </Button>
               </div>
@@ -315,7 +361,12 @@ export default function SettingsPage() {
                     type={showCurrentPassword ? "text" : "password"}
                     placeholder="Enter your current password..."
                     value={passwordData.current_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, current_password: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        current_password: e.target.value,
+                      }))
+                    }
                   />
                   <Button
                     type="button"
@@ -340,7 +391,12 @@ export default function SettingsPage() {
                     type={showNewPassword ? "text" : "password"}
                     placeholder="Enter your new password..."
                     value={passwordData.new_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, new_password: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        new_password: e.target.value,
+                      }))
+                    }
                   />
                   <Button
                     type="button"
@@ -365,7 +421,12 @@ export default function SettingsPage() {
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your new password..."
                     value={passwordData.confirm_password}
-                    onChange={(e) => setPasswordData(prev => ({ ...prev, confirm_password: e.target.value }))}
+                    onChange={(e) =>
+                      setPasswordData((prev) => ({
+                        ...prev,
+                        confirm_password: e.target.value,
+                      }))
+                    }
                   />
                   <Button
                     type="button"
@@ -383,14 +444,17 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button onClick={handleUpdatePassword} disabled={passwordLoading}>
+                <Button
+                  onClick={handleUpdatePassword}
+                  disabled={passwordLoading}
+                >
                   {passwordLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Updating...
                     </>
                   ) : (
-                    'Update Password'
+                    "Update Password"
                   )}
                 </Button>
               </div>
@@ -402,7 +466,9 @@ export default function SettingsPage() {
         <TabsContent value="danger">
           <Card className="border-red-200 dark:border-red-800">
             <CardHeader>
-              <CardTitle className="text-red-600 dark:text-red-400">Danger Zone</CardTitle>
+              <CardTitle className="text-red-600 dark:text-red-400">
+                Danger Zone
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-lg border border-red-200 dark:border-red-800 p-4">
@@ -410,10 +476,11 @@ export default function SettingsPage() {
                   Delete Account
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  Once you delete your account, there is no going back. Please be certain.
+                  Once you delete your account, there is no going back. Please
+                  be certain.
                 </p>
-                <Button 
-                  variant="destructive" 
+                <Button
+                  variant="destructive"
                   onClick={() => setIsDeleteDialogOpen(true)}
                 >
                   <AlertTriangle className="mr-2 h-4 w-4" />
@@ -431,21 +498,29 @@ export default function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="text-red-600">Delete Account</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.
+              Are you sure you want to delete your account? This action cannot
+              be undone and will permanently remove all your data.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleteLoading}>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading}
+            >
               {deleteLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Deleting...
                 </>
               ) : (
-                'Delete Account'
+                "Delete Account"
               )}
             </Button>
           </DialogFooter>

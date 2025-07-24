@@ -2,15 +2,20 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/hooks/use-toast"
+import { motion } from "framer-motion"
+import { X } from "lucide-react"
+import { useState } from "react"
 
 interface AddUserDialogProps {
   open: boolean
@@ -60,13 +65,23 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             Add User
-            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="h-6 w-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="h-6 w-6"
+            >
               <X className="h-4 w-4" />
             </Button>
           </DialogTitle>
         </DialogHeader>
 
-        <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleSubmit} className="space-y-4">
+        <motion.form
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="email">
               Email <span className="text-red-500">*</span>
@@ -83,7 +98,12 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="fullName">Full name</Label>
-            <Input id="fullName" placeholder="User" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            <Input
+              id="fullName"
+              placeholder="User"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
@@ -119,22 +139,35 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
               <Checkbox
                 id="superuser"
                 checked={isSuperuser}
-                onCheckedChange={(checked) => setIsSuperuser(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setIsSuperuser(checked as boolean)
+                }
               />
               <Label htmlFor="superuser">Is superuser?</Label>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Checkbox id="active" checked={isActive} onCheckedChange={(checked) => setIsActive(checked as boolean)} />
+              <Checkbox
+                id="active"
+                checked={isActive}
+                onCheckedChange={(checked) => setIsActive(checked as boolean)}
+              />
               <Label htmlFor="active">Is active?</Label>
             </div>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
+            <Button
+              type="submit"
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+            >
               Save
             </Button>
           </div>

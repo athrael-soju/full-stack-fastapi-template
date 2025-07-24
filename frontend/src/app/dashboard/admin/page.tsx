@@ -1,19 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Plus, MoreHorizontal, Edit, Trash2, Users, Loader2, AlertCircle, Eye, EyeOff, Shield, ShieldCheck } from "lucide-react"
+import type { UserCreate, UserPublic, UserUpdate } from "@/client/types.gen"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
 import {
   Pagination,
   PaginationContent,
@@ -22,14 +29,38 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Switch } from "@/components/ui/switch"
 import {
-  usersReadUsers,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   usersCreateUser,
-  usersUpdateUser,
   usersDeleteUser,
-  usersReadUserMe
+  usersReadUserMe,
+  usersReadUsers,
+  usersUpdateUser,
 } from "@/lib/api-client"
-import type { UserPublic, UserCreate, UserUpdate } from "@/client/types.gen"
+import { motion } from "framer-motion"
+import {
+  AlertCircle,
+  Edit,
+  Eye,
+  EyeOff,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  Shield,
+  ShieldCheck,
+  Trash2,
+  Users,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface AdminState {
   users: UserPublic[]
@@ -58,58 +89,58 @@ export default function AdminPage() {
     loading: true,
     error: null,
     success: null,
-    currentUser: null
+    currentUser: null,
   })
-  
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserPublic | null>(null)
-  const [formData, setFormData] = useState<UserFormData>({ 
-    email: "", 
-    full_name: "", 
-    password: "", 
-    is_superuser: false 
+  const [formData, setFormData] = useState<UserFormData>({
+    email: "",
+    full_name: "",
+    password: "",
+    is_superuser: false,
   })
   const [formLoading, setFormLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
   const getAuthToken = () => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem("access_token")
     if (!token) {
-      throw new Error('No authentication token found')
+      throw new Error("No authentication token found")
     }
     return token
   }
 
   const updateState = (updates: Partial<AdminState>) => {
-    setState(prev => ({ ...prev, ...updates }))
+    setState((prev) => ({ ...prev, ...updates }))
   }
 
   const fetchCurrentUser = async () => {
     try {
       const token = getAuthToken()
       const response = await usersReadUserMe({
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
       if (response.data) {
         updateState({ currentUser: response.data })
       }
     } catch (error) {
-      console.error('Fetch current user error:', error)
+      console.error("Fetch current user error:", error)
     }
   }
 
-  const fetchUsers = async (page: number = 1) => {
+  const fetchUsers = async (page = 1) => {
     try {
       updateState({ loading: true, error: null })
       const token = getAuthToken()
-      
+
       const response = await usersReadUsers({
         query: {
           skip: (page - 1) * PER_PAGE,
-          limit: PER_PAGE
+          limit: PER_PAGE,
         },
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (response.data) {
@@ -117,14 +148,14 @@ export default function AdminPage() {
           users: response.data.data || [],
           totalCount: response.data.count || 0,
           currentPage: page,
-          loading: false
+          loading: false,
         })
       }
     } catch (error) {
-      console.error('Fetch users error:', error)
+      console.error("Fetch users error:", error)
       updateState({
-        error: error instanceof Error ? error.message : 'Failed to fetch users',
-        loading: false
+        error: error instanceof Error ? error.message : "Failed to fetch users",
+        loading: false,
       })
     }
   }
@@ -135,13 +166,17 @@ export default function AdminPage() {
   }, [])
 
   const handleCreateUser = async () => {
-    if (!formData.email.trim() || !formData.full_name.trim() || !formData.password.trim()) {
-      updateState({ error: 'Email, full name, and password are required' })
+    if (
+      !formData.email.trim() ||
+      !formData.full_name.trim() ||
+      !formData.password.trim()
+    ) {
+      updateState({ error: "Email, full name, and password are required" })
       return
     }
 
     if (formData.password.length < 8) {
-      updateState({ error: 'Password must be at least 8 characters long' })
+      updateState({ error: "Password must be at least 8 characters long" })
       return
     }
 
@@ -149,26 +184,33 @@ export default function AdminPage() {
       setFormLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const userData: UserCreate = {
         email: formData.email,
         full_name: formData.full_name,
         password: formData.password,
-        is_superuser: formData.is_superuser
+        is_superuser: formData.is_superuser,
       }
 
       await usersCreateUser({
         body: userData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'User created successfully' })
-      setFormData({ email: "", full_name: "", password: "", is_superuser: false })
+      updateState({ success: "User created successfully" })
+      setFormData({
+        email: "",
+        full_name: "",
+        password: "",
+        is_superuser: false,
+      })
       setIsAddDialogOpen(false)
       fetchUsers(state.currentPage)
     } catch (error) {
-      console.error('Create user error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to create user' })
+      console.error("Create user error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to create user",
+      })
     } finally {
       setFormLoading(false)
     }
@@ -176,7 +218,7 @@ export default function AdminPage() {
 
   const handleUpdateUser = async () => {
     if (!editingUser || !formData.email.trim() || !formData.full_name.trim()) {
-      updateState({ error: 'Email and full name are required' })
+      updateState({ error: "Email and full name are required" })
       return
     }
 
@@ -184,27 +226,34 @@ export default function AdminPage() {
       setFormLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const userData: UserUpdate = {
         email: formData.email,
         full_name: formData.full_name,
-        is_superuser: formData.is_superuser
+        is_superuser: formData.is_superuser,
       }
 
       await usersUpdateUser({
         path: { user_id: editingUser.id.toString() },
         body: userData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'User updated successfully' })
-      setFormData({ email: "", full_name: "", password: "", is_superuser: false })
+      updateState({ success: "User updated successfully" })
+      setFormData({
+        email: "",
+        full_name: "",
+        password: "",
+        is_superuser: false,
+      })
       setIsEditDialogOpen(false)
       setEditingUser(null)
       fetchUsers(state.currentPage)
     } catch (error) {
-      console.error('Update user error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to update user' })
+      console.error("Update user error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to update user",
+      })
     } finally {
       setFormLoading(false)
     }
@@ -212,38 +261,44 @@ export default function AdminPage() {
 
   const handleDeleteUser = async (user: UserPublic) => {
     if (state.currentUser && user.id === state.currentUser.id) {
-      updateState({ error: 'You cannot delete your own account from here' })
+      updateState({ error: "You cannot delete your own account from here" })
       return
     }
 
-    if (!confirm(`Are you sure you want to delete user "${user.full_name || user.email}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete user "${user.full_name || user.email}"? This action cannot be undone.`,
+      )
+    ) {
       return
     }
 
     try {
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       await usersDeleteUser({
         path: { user_id: user.id.toString() },
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'User deleted successfully' })
+      updateState({ success: "User deleted successfully" })
       fetchUsers(state.currentPage)
     } catch (error) {
-      console.error('Delete user error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to delete user' })
+      console.error("Delete user error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to delete user",
+      })
     }
   }
 
   const openEditDialog = (user: UserPublic) => {
     setEditingUser(user)
-    setFormData({ 
-      email: user.email, 
-      full_name: user.full_name || "", 
-      password: "", 
-      is_superuser: user.is_superuser || false 
+    setFormData({
+      email: user.email,
+      full_name: user.full_name || "",
+      password: "",
+      is_superuser: user.is_superuser || false,
     })
     setIsEditDialogOpen(true)
   }
@@ -276,7 +331,9 @@ export default function AdminPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Panel</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Admin Panel
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Manage users and their permissions across the application.
           </p>
@@ -358,7 +415,9 @@ export default function AdminPage() {
                       transition={{ delay: index * 0.1 }}
                       className="border-b"
                     >
-                      <TableCell className="font-mono text-sm">{user.id}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {user.id}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {user.full_name || (
                           <span className="italic text-gray-400">No name</span>
@@ -368,7 +427,9 @@ export default function AdminPage() {
                         {user.email}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.is_superuser ? "default" : "secondary"}>
+                        <Badge
+                          variant={user.is_superuser ? "default" : "secondary"}
+                        >
                           {user.is_superuser ? (
                             <>
                               <ShieldCheck className="h-3 w-3 mr-1" />
@@ -390,11 +451,13 @@ export default function AdminPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(user)}>
+                            <DropdownMenuItem
+                              onClick={() => openEditDialog(user)}
+                            >
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteUser(user)}
                               className="text-red-600"
                               disabled={state.currentUser?.id === user.id}
@@ -416,9 +479,16 @@ export default function AdminPage() {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => state.currentPage > 1 && fetchUsers(state.currentPage - 1)}
-                          className={state.currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        <PaginationPrevious
+                          onClick={() =>
+                            state.currentPage > 1 &&
+                            fetchUsers(state.currentPage - 1)
+                          }
+                          className={
+                            state.currentPage <= 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                       {[...Array(totalPages)].map((_, i) => {
@@ -432,7 +502,7 @@ export default function AdminPage() {
                         }
                         return (
                           <PaginationItem key={page}>
-                            <PaginationLink 
+                            <PaginationLink
                               onClick={() => fetchUsers(page)}
                               className="cursor-pointer"
                             >
@@ -442,9 +512,16 @@ export default function AdminPage() {
                         )
                       })}
                       <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => state.currentPage < totalPages && fetchUsers(state.currentPage + 1)}
-                          className={state.currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        <PaginationNext
+                          onClick={() =>
+                            state.currentPage < totalPages &&
+                            fetchUsers(state.currentPage + 1)
+                          }
+                          className={
+                            state.currentPage >= totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -473,7 +550,9 @@ export default function AdminPage() {
                 type="email"
                 placeholder="Enter user email..."
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
               />
             </div>
             <div className="space-y-2">
@@ -482,7 +561,12 @@ export default function AdminPage() {
                 id="add-name"
                 placeholder="Enter user full name..."
                 value={formData.full_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    full_name: e.target.value,
+                  }))
+                }
               />
             </div>
             <div className="space-y-2">
@@ -493,7 +577,12 @@ export default function AdminPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter user password..."
                   value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                 />
                 <Button
                   type="button"
@@ -514,7 +603,9 @@ export default function AdminPage() {
               <Switch
                 id="add-superuser"
                 checked={formData.is_superuser}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_superuser: checked }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, is_superuser: checked }))
+                }
               />
               <Label htmlFor="add-superuser">Administrator privileges</Label>
             </div>
@@ -530,7 +621,7 @@ export default function AdminPage() {
                   Creating...
                 </>
               ) : (
-                'Create User'
+                "Create User"
               )}
             </Button>
           </DialogFooter>
@@ -554,7 +645,9 @@ export default function AdminPage() {
                 type="email"
                 placeholder="Enter user email..."
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
               />
             </div>
             <div className="space-y-2">
@@ -563,26 +656,38 @@ export default function AdminPage() {
                 id="edit-name"
                 placeholder="Enter user full name..."
                 value={formData.full_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    full_name: e.target.value,
+                  }))
+                }
               />
             </div>
             <div className="flex items-center space-x-2">
               <Switch
                 id="edit-superuser"
                 checked={formData.is_superuser}
-                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_superuser: checked }))}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, is_superuser: checked }))
+                }
                 disabled={state.currentUser?.id === editingUser?.id}
               />
               <Label htmlFor="edit-superuser">
                 Administrator privileges
                 {state.currentUser?.id === editingUser?.id && (
-                  <span className="text-sm text-gray-500 ml-2">(Cannot modify your own role)</span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    (Cannot modify your own role)
+                  </span>
                 )}
               </Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpdateUser} disabled={formLoading}>
@@ -592,7 +697,7 @@ export default function AdminPage() {
                   Updating...
                 </>
               ) : (
-                'Update User'
+                "Update User"
               )}
             </Button>
           </DialogFooter>

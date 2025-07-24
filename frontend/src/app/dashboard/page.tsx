@@ -1,14 +1,27 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Users, Package, Settings, Activity, CheckCircle, XCircle, AlertCircle } from "lucide-react"
-import { usersReadUsers, usersReadUserMe, itemsReadItems, utilsHealthCheck } from "@/lib/api-client"
-import type { UserPublic, ItemPublic } from "@/lib/api-client"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  itemsReadItems,
+  usersReadUserMe,
+  usersReadUsers,
+  utilsHealthCheck,
+} from "@/lib/api-client"
+import type { ItemPublic, UserPublic } from "@/lib/api-client"
+import { motion } from "framer-motion"
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Package,
+  Settings,
+  Users,
+  XCircle,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface DashboardData {
   users: UserPublic[]
@@ -27,48 +40,65 @@ export default function DashboardPage() {
   const [state, setState] = useState<DashboardState>({
     data: null,
     loading: true,
-    error: null
+    error: null,
   })
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        setState(prev => ({ ...prev, loading: true, error: null }))
-        
+        setState((prev) => ({ ...prev, loading: true, error: null }))
+
         // Get auth token from localStorage
-        const token = localStorage.getItem('access_token')
+        const token = localStorage.getItem("access_token")
         if (!token) {
-          throw new Error('No authentication token found')
+          throw new Error("No authentication token found")
         }
 
         // Fetch data in parallel
-        const [usersResponse, itemsResponse, currentUserResponse, healthResponse] = await Promise.allSettled([
+        const [
+          usersResponse,
+          itemsResponse,
+          currentUserResponse,
+          healthResponse,
+        ] = await Promise.allSettled([
           usersReadUsers({
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }),
           itemsReadItems({
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }),
           usersReadUserMe({
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           }),
-          utilsHealthCheck()
+          utilsHealthCheck(),
         ])
 
         const data: DashboardData = {
-          users: usersResponse.status === 'fulfilled' ? usersResponse.value.data?.data || [] : [],
-          items: itemsResponse.status === 'fulfilled' ? itemsResponse.value.data?.data || [] : [],
-          currentUser: currentUserResponse.status === 'fulfilled' ? currentUserResponse.value.data || null : null,
-          systemHealth: healthResponse.status === 'fulfilled'
+          users:
+            usersResponse.status === "fulfilled"
+              ? usersResponse.value.data?.data || []
+              : [],
+          items:
+            itemsResponse.status === "fulfilled"
+              ? itemsResponse.value.data?.data || []
+              : [],
+          currentUser:
+            currentUserResponse.status === "fulfilled"
+              ? currentUserResponse.value.data || null
+              : null,
+          systemHealth: healthResponse.status === "fulfilled",
         }
 
         setState({ data, loading: false, error: null })
       } catch (error) {
-        console.error('Dashboard data fetch error:', error)
+        console.error("Dashboard data fetch error:", error)
         setState({
           data: null,
           loading: false,
-          error: error instanceof Error ? error.message : 'Failed to load dashboard data'
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to load dashboard data",
         })
       }
     }
@@ -92,9 +122,14 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {data?.currentUser ? `Welcome back, ${data.currentUser.full_name || data.currentUser.email}!` : 'Welcome back!'} Here's what's happening with your application.
+          {data?.currentUser
+            ? `Welcome back, ${data.currentUser.full_name || data.currentUser.email}!`
+            : "Welcome back!"}{" "}
+          Here's what's happening with your application.
         </p>
       </div>
 
@@ -108,7 +143,9 @@ export default function DashboardPage() {
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Total Users
+              </CardTitle>
               <Users className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
@@ -134,7 +171,9 @@ export default function DashboardPage() {
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Items</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Total Items
+              </CardTitle>
               <Package className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
@@ -160,7 +199,9 @@ export default function DashboardPage() {
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">Current User</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                Current User
+              </CardTitle>
               <Activity className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
@@ -168,7 +209,9 @@ export default function DashboardPage() {
                 <Skeleton className="h-8 w-24" />
               ) : (
                 <div className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                  {data?.currentUser?.full_name || data?.currentUser?.email || 'Unknown'}
+                  {data?.currentUser?.full_name ||
+                    data?.currentUser?.email ||
+                    "Unknown"}
                 </div>
               )}
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -186,7 +229,9 @@ export default function DashboardPage() {
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">System Health</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                System Health
+              </CardTitle>
               <Settings className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
@@ -200,7 +245,7 @@ export default function DashboardPage() {
                     <XCircle className="h-6 w-6 text-red-500" />
                   )}
                   <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {data?.systemHealth ? 'Healthy' : 'Issues'}
+                    {data?.systemHealth ? "Healthy" : "Issues"}
                   </span>
                 </div>
               )}
@@ -247,7 +292,9 @@ export default function DashboardPage() {
                     <div key={user.id} className="flex items-center space-x-4">
                       <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {(user.full_name || user.email).charAt(0).toUpperCase()}
+                          {(user.full_name || user.email)
+                            .charAt(0)
+                            .toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -317,12 +364,10 @@ export default function DashboardPage() {
                           {item.title}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                          {item.description || 'No description'}
+                          {item.description || "No description"}
                         </p>
                       </div>
-                      <div className="text-xs text-gray-400">
-                        ID: {item.id}
-                      </div>
+                      <div className="text-xs text-gray-400">ID: {item.id}</div>
                     </div>
                   ))}
                   {data.items.length === 0 && (
@@ -375,42 +420,51 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     {data?.systemHealth ? (
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full" />
                     ) : (
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-red-500 rounded-full" />
                     )}
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">API Server</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      API Server
+                    </span>
                   </div>
                   <div className="text-right">
-                    <div className={`text-sm ${data?.systemHealth ? 'text-green-600' : 'text-red-600'}`}>
-                      {data?.systemHealth ? 'Online' : 'Offline'}
+                    <div
+                      className={`text-sm ${data?.systemHealth ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {data?.systemHealth ? "Online" : "Offline"}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {data?.systemHealth ? 'Responding' : 'Not responding'}
+                      {data?.systemHealth ? "Responding" : "Not responding"}
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">Authentication</span>
+                    <div className="w-3 h-3 bg-green-500 rounded-full" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      Authentication
+                    </span>
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-green-600">Active</div>
                     <div className="text-xs text-gray-400">Token valid</div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">Data Loading</span>
+                    <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      Data Loading
+                    </span>
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-blue-600">Complete</div>
                     <div className="text-xs text-gray-400">
-                      {data?.users.length || 0} users, {data?.items.length || 0} items
+                      {data?.users.length || 0} users, {data?.items.length || 0}{" "}
+                      items
                     </div>
                   </div>
                 </div>

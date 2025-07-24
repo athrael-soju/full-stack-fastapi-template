@@ -2,15 +2,20 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
+import { motion } from "framer-motion"
+import { X } from "lucide-react"
+import { useState } from "react"
 
 interface AddItemDialogProps {
   open: boolean
@@ -43,13 +48,23 @@ export function AddItemDialog({ open, onOpenChange }: AddItemDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             Add Item
-            <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="h-6 w-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="h-6 w-6"
+            >
               <X className="h-4 w-4" />
             </Button>
           </DialogTitle>
         </DialogHeader>
 
-        <motion.form initial={{ opacity: 0 }} animate={{ opacity: 1 }} onSubmit={handleSubmit} className="space-y-4">
+        <motion.form
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="title">
               Title <span className="text-red-500">*</span>
@@ -75,10 +90,17 @@ export function AddItemDialog({ open, onOpenChange }: AddItemDialogProps) {
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 text-white">
+            <Button
+              type="submit"
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+            >
               Save
             </Button>
           </div>

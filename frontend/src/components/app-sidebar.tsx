@@ -1,19 +1,19 @@
 "use client"
 
-import { Home, Package, Settings, Shield, Search } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
 } from "@/components/ui/sidebar"
+import { Home, Package, Search, Settings, Shield } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 const menuItems = [
   {
@@ -50,7 +50,7 @@ export function AppSidebar() {
             alt="FastAPI Logo"
             style={{ width: "80%", height: "auto" }}
           />
-        </Link>        
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

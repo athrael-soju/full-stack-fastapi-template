@@ -1,18 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Plus, MoreHorizontal, Edit, Trash2, Search, Loader2, AlertCircle } from "lucide-react"
+import type { ItemCreate, ItemPublic, ItemUpdate } from "@/client/types.gen"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Pagination,
   PaginationContent,
@@ -21,13 +28,33 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
-  itemsReadItems,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import {
   itemsCreateItem,
+  itemsDeleteItem,
+  itemsReadItems,
   itemsUpdateItem,
-  itemsDeleteItem
 } from "@/lib/api-client"
-import type { ItemPublic, ItemCreate, ItemUpdate } from "@/client/types.gen"
+import { motion } from "framer-motion"
+import {
+  AlertCircle,
+  Edit,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Trash2,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface ItemsState {
   items: ItemPublic[]
@@ -52,38 +79,41 @@ export default function ItemsPage() {
     currentPage: 1,
     loading: true,
     error: null,
-    success: null
+    success: null,
   })
-  
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ItemPublic | null>(null)
-  const [formData, setFormData] = useState<ItemFormData>({ title: "", description: "" })
+  const [formData, setFormData] = useState<ItemFormData>({
+    title: "",
+    description: "",
+  })
   const [formLoading, setFormLoading] = useState(false)
 
   const getAuthToken = () => {
-    const token = localStorage.getItem('access_token')
+    const token = localStorage.getItem("access_token")
     if (!token) {
-      throw new Error('No authentication token found')
+      throw new Error("No authentication token found")
     }
     return token
   }
 
   const updateState = (updates: Partial<ItemsState>) => {
-    setState(prev => ({ ...prev, ...updates }))
+    setState((prev) => ({ ...prev, ...updates }))
   }
 
-  const fetchItems = async (page: number = 1) => {
+  const fetchItems = async (page = 1) => {
     try {
       updateState({ loading: true, error: null })
       const token = getAuthToken()
-      
+
       const response = await itemsReadItems({
         query: {
           skip: (page - 1) * PER_PAGE,
-          limit: PER_PAGE
+          limit: PER_PAGE,
         },
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (response.data) {
@@ -91,14 +121,14 @@ export default function ItemsPage() {
           items: response.data.data || [],
           totalCount: response.data.count || 0,
           currentPage: page,
-          loading: false
+          loading: false,
         })
       }
     } catch (error) {
-      console.error('Fetch items error:', error)
+      console.error("Fetch items error:", error)
       updateState({
-        error: error instanceof Error ? error.message : 'Failed to fetch items',
-        loading: false
+        error: error instanceof Error ? error.message : "Failed to fetch items",
+        loading: false,
       })
     }
   }
@@ -109,7 +139,7 @@ export default function ItemsPage() {
 
   const handleCreateItem = async () => {
     if (!formData.title.trim()) {
-      updateState({ error: 'Title is required' })
+      updateState({ error: "Title is required" })
       return
     }
 
@@ -117,24 +147,26 @@ export default function ItemsPage() {
       setFormLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const itemData: ItemCreate = {
         title: formData.title,
-        description: formData.description || undefined
+        description: formData.description || undefined,
       }
 
       await itemsCreateItem({
         body: itemData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'Item created successfully' })
+      updateState({ success: "Item created successfully" })
       setFormData({ title: "", description: "" })
       setIsAddDialogOpen(false)
       fetchItems(state.currentPage)
     } catch (error) {
-      console.error('Create item error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to create item' })
+      console.error("Create item error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to create item",
+      })
     } finally {
       setFormLoading(false)
     }
@@ -142,7 +174,7 @@ export default function ItemsPage() {
 
   const handleUpdateItem = async () => {
     if (!editingItem || !formData.title.trim()) {
-      updateState({ error: 'Title is required' })
+      updateState({ error: "Title is required" })
       return
     }
 
@@ -150,50 +182,58 @@ export default function ItemsPage() {
       setFormLoading(true)
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       const itemData: ItemUpdate = {
         title: formData.title,
-        description: formData.description || undefined
+        description: formData.description || undefined,
       }
 
       await itemsUpdateItem({
         path: { id: editingItem.id.toString() },
         body: itemData,
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'Item updated successfully' })
+      updateState({ success: "Item updated successfully" })
       setFormData({ title: "", description: "" })
       setIsEditDialogOpen(false)
       setEditingItem(null)
       fetchItems(state.currentPage)
     } catch (error) {
-      console.error('Update item error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to update item' })
+      console.error("Update item error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to update item",
+      })
     } finally {
       setFormLoading(false)
     }
   }
 
   const handleDeleteItem = async (item: ItemPublic) => {
-    if (!confirm(`Are you sure you want to delete "${item.title}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${item.title}"? This action cannot be undone.`,
+      )
+    ) {
       return
     }
 
     try {
       updateState({ error: null, success: null })
       const token = getAuthToken()
-      
+
       await itemsDeleteItem({
         path: { id: item.id.toString() },
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
 
-      updateState({ success: 'Item deleted successfully' })
+      updateState({ success: "Item deleted successfully" })
       fetchItems(state.currentPage)
     } catch (error) {
-      console.error('Delete item error:', error)
-      updateState({ error: error instanceof Error ? error.message : 'Failed to delete item' })
+      console.error("Delete item error:", error)
+      updateState({
+        error: error instanceof Error ? error.message : "Failed to delete item",
+      })
     }
   }
 
@@ -214,7 +254,9 @@ export default function ItemsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Items Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Items Management
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Manage your application items and their properties.
           </p>
@@ -294,11 +336,17 @@ export default function ItemsPage() {
                       transition={{ delay: index * 0.1 }}
                       className="border-b"
                     >
-                      <TableCell className="font-mono text-sm">{item.id}</TableCell>
-                      <TableCell className="font-medium">{item.title}</TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {item.id}
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {item.title}
+                      </TableCell>
                       <TableCell className="text-gray-600 dark:text-gray-400 max-w-xs truncate">
                         {item.description || (
-                          <span className="italic text-gray-400">No description</span>
+                          <span className="italic text-gray-400">
+                            No description
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
@@ -309,11 +357,13 @@ export default function ItemsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => openEditDialog(item)}>
+                            <DropdownMenuItem
+                              onClick={() => openEditDialog(item)}
+                            >
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleDeleteItem(item)}
                               className="text-red-600"
                             >
@@ -334,9 +384,16 @@ export default function ItemsPage() {
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
-                          onClick={() => state.currentPage > 1 && fetchItems(state.currentPage - 1)}
-                          className={state.currentPage <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        <PaginationPrevious
+                          onClick={() =>
+                            state.currentPage > 1 &&
+                            fetchItems(state.currentPage - 1)
+                          }
+                          className={
+                            state.currentPage <= 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                       {[...Array(totalPages)].map((_, i) => {
@@ -350,7 +407,7 @@ export default function ItemsPage() {
                         }
                         return (
                           <PaginationItem key={page}>
-                            <PaginationLink 
+                            <PaginationLink
                               onClick={() => fetchItems(page)}
                               className="cursor-pointer"
                             >
@@ -360,9 +417,16 @@ export default function ItemsPage() {
                         )
                       })}
                       <PaginationItem>
-                        <PaginationNext 
-                          onClick={() => state.currentPage < totalPages && fetchItems(state.currentPage + 1)}
-                          className={state.currentPage >= totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        <PaginationNext
+                          onClick={() =>
+                            state.currentPage < totalPages &&
+                            fetchItems(state.currentPage + 1)
+                          }
+                          className={
+                            state.currentPage >= totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>
@@ -390,7 +454,9 @@ export default function ItemsPage() {
                 id="add-title"
                 placeholder="Enter item title..."
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
               />
             </div>
             <div className="space-y-2">
@@ -399,7 +465,12 @@ export default function ItemsPage() {
                 id="add-description"
                 placeholder="Enter item description..."
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={3}
               />
             </div>
@@ -415,7 +486,7 @@ export default function ItemsPage() {
                   Creating...
                 </>
               ) : (
-                'Create Item'
+                "Create Item"
               )}
             </Button>
           </DialogFooter>
@@ -438,7 +509,9 @@ export default function ItemsPage() {
                 id="edit-title"
                 placeholder="Enter item title..."
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
               />
             </div>
             <div className="space-y-2">
@@ -447,13 +520,21 @@ export default function ItemsPage() {
                 id="edit-description"
                 placeholder="Enter item description..."
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={3}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button onClick={handleUpdateItem} disabled={formLoading}>
@@ -463,7 +544,7 @@ export default function ItemsPage() {
                   Updating...
                 </>
               ) : (
-                'Update Item'
+                "Update Item"
               )}
             </Button>
           </DialogFooter>

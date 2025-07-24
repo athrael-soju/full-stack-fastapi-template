@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, User, LogOut, Settings } from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,9 +10,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { useRouter } from "next/navigation"
 import { clearAuthTokens } from "@/lib/auth"
+import { Bell, LogOut, Settings, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function DashboardHeader() {
   const router = useRouter()
@@ -21,11 +21,11 @@ export function DashboardHeader() {
     // Clear authentication tokens/data
     clearAuthTokens()
     // Redirect to login page
-    router.push('/login')
+    router.push("/login")
   }
 
   const handleProfile = () => {
-    router.push('/dashboard/settings')
+    router.push("/dashboard/settings")
   }
 
   return (

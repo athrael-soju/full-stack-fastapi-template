@@ -2,18 +2,21 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { Eye, EyeOff, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  type BodyLoginLoginAccessToken,
+  loginLoginAccessToken,
+} from "@/lib/api-client"
+import { isAuthenticated } from "@/lib/auth"
+import { motion } from "framer-motion"
+import { AlertCircle, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { loginLoginAccessToken, type BodyLoginLoginAccessToken } from "@/lib/api-client"
-import { isAuthenticated } from "@/lib/auth"
+import { useEffect, useState } from "react"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -38,17 +41,17 @@ export default function LoginPage() {
       const loginData: BodyLoginLoginAccessToken = {
         username: email,
         password: password,
-        grant_type: "password"
+        grant_type: "password",
       }
 
       const response = await loginLoginAccessToken({
-        body: loginData
+        body: loginData,
       })
 
       if (response.data?.access_token) {
         // Store the access token in localStorage
         localStorage.setItem("access_token", response.data.access_token)
-        
+
         console.log("Login successful, redirecting to dashboard...")
         // Redirect to dashboard page
         router.push("/dashboard")
@@ -57,7 +60,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error("Login error:", err)
-      
+
       // Handle different types of errors
       if (err?.error?.detail) {
         setError(err.error.detail)
@@ -89,10 +92,12 @@ export default function LoginPage() {
             >
               <div className="w-12 h-12 bg-teal-600 rounded-full flex items-center justify-center">
                 <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                  <div className="w-4 h-4 bg-teal-600 rounded-full"></div>
+                  <div className="w-4 h-4 bg-teal-600 rounded-full" />
                 </div>
               </div>
-              <span className="ml-3 text-2xl font-bold text-teal-600">FastAPI</span>
+              <span className="ml-3 text-2xl font-bold text-teal-600">
+                FastAPI
+              </span>
             </motion.div>
           </CardHeader>
           <CardContent>
@@ -143,12 +148,15 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="text-center">
-                <Link href="/forgot-password" className="text-sm text-teal-600 hover:text-teal-700 hover:underline">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
+                >
                   Forgot password?
                 </Link>
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white font-medium"
                 disabled={isLoading}
               >
