@@ -6,14 +6,9 @@ python -c "import app.main; import json; print(json.dumps(app.main.app.openapi()
 
 cd ..
 
-cp openapi.json frontend-nextjs/
 mv openapi.json frontend/
 
 cd frontend
-npm run generate-client
-npx biome format --write ./src/client
-
-cd ../frontend-nextjs
 npm run generate-client
 npx biome format --write ./src/client
 

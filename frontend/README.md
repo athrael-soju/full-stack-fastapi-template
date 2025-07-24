@@ -1,6 +1,6 @@
-# FastAPI Project - Frontend
+# FastAPI Project - Frontend (Next.js)
 
-The frontend is built with [Vite](https://vitejs.dev/), [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), [TanStack Query](https://tanstack.com/query), [TanStack Router](https://tanstack.com/router) and [Chakra UI](https://chakra-ui.com/).
+The frontend is built with [Next.js 15](https://nextjs.org/), [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), [TanStack Query](https://tanstack.com/query), [Tailwind CSS](https://tailwindcss.com/), and [shadcn/ui](https://ui.shadcn.com/).
 
 ## Frontend development
 
@@ -45,11 +45,23 @@ npm install
 npm run dev
 ```
 
-* Then open your browser at http://localhost:5173/.
+* Then open your browser at http://localhost:3000/.
 
 Notice that this live server is not running inside Docker, it's for local development, and that is the recommended workflow. Once you are happy with your frontend, you can build the frontend Docker image and start it, to test it in a production-like environment. But building the image at every change will not be as productive as running the local development server with live reload.
 
 Check the file `package.json` to see other available options.
+
+### Technology Stack
+
+This Next.js frontend uses:
+
+- **Next.js 15** with App Router for the React framework
+- **Tailwind CSS v4** for styling with modern CSS features
+- **shadcn/ui** for beautiful, accessible UI components
+- **Lucide React** for consistent iconography
+- **TanStack Query** for server state management
+- **TypeScript** for type safety
+- **Generated API Client** for backend integration
 
 ### Removing the frontend
 
@@ -59,7 +71,7 @@ If you are developing an API-only app and want to remove the frontend, you can d
 
 * In the `docker-compose.yml` file, remove the whole service / section `frontend`.
 
-* In the `docker-compose.override.yml` file, remove the whole service / section `frontend` and `playwright`.
+* In the `docker-compose.override.yml` file, remove the whole service / section `frontend`.
 
 Done, you have a frontend-less (api-only) app. 🤓
 
@@ -99,56 +111,63 @@ npm run generate-client
 
 * Commit the changes.
 
-Notice that everytime the backend changes (changing the OpenAPI schema), you should follow these steps again to update the frontend client.
+## Features
 
-## Using a Remote API
+This Next.js frontend includes:
 
-If you want to use a remote API, you can set the environment variable `VITE_API_URL` to the URL of the remote API. For example, you can set it in the `frontend/.env` file:
+- **Authentication**: JWT-based authentication with login/logout functionality
+- **Dashboard**: Modern dashboard with sidebar navigation
+- **User Management**: User profile and settings management
+- **Responsive Design**: Mobile-first responsive design with dark mode support
+- **Type Safety**: Full TypeScript integration with generated API types
+- **Modern UI**: Beautiful components built with shadcn/ui and Tailwind CSS
 
-```env
-VITE_API_URL=https://api.my-domain.example.com
+## Project Structure
+
+```
+frontend/
+├── app/                    # Next.js App Router pages
+├── components/             # Reusable React components
+│   └── ui/                # shadcn/ui components
+├── lib/                   # Utility functions and configurations
+├── hooks/                 # Custom React hooks
+├── client/                # Generated API client
+├── public/                # Static assets
+└── styles/                # Global styles and Tailwind config
 ```
 
-Then, when you run the frontend, it will use that URL as the base URL for the API.
+## Development
 
-## Code Structure
+### Adding New Components
 
-The frontend code is structured as follows:
-
-* `frontend/src` - The main frontend code.
-* `frontend/src/assets` - Static assets.
-* `frontend/src/client` - The generated OpenAPI client.
-* `frontend/src/components` -  The different components of the frontend.
-* `frontend/src/hooks` - Custom hooks.
-* `frontend/src/routes` - The different routes of the frontend which include the pages.
-* `theme.tsx` - The Chakra UI custom theme.
-
-## End-to-End Testing with Playwright
-
-The frontend includes initial end-to-end tests using Playwright. To run the tests, you need to have the Docker Compose stack running. Start the stack with the following command:
+To add new shadcn/ui components:
 
 ```bash
-docker compose up -d --wait backend
+npx shadcn@latest add [component-name]
 ```
 
-Then, you can run the tests with the following command:
+### Building for Production
 
 ```bash
-npx playwright test
+npm run build
 ```
 
-You can also run your tests in UI mode to see the browser and interact with it running:
+### Running Tests
 
 ```bash
-npx playwright test --ui
+npm run test
 ```
 
-To stop and remove the Docker Compose stack and clean the data created in tests, use the following command:
+## Docker
+
+The frontend is containerized and can be run with Docker:
 
 ```bash
-docker compose down -v
+# Build the image
+docker build -t frontend .
+
+# Run the container
+docker run -p 3000:3000 frontend
 ```
 
-To update the tests, navigate to the tests directory and modify the existing test files or add new ones as needed.
-
-For more information on writing and running Playwright tests, refer to the official [Playwright documentation](https://playwright.dev/docs/intro).
+Or use the provided Docker Compose setup from the project root.

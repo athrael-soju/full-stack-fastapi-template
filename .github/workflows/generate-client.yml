@@ -34,9 +34,6 @@ jobs:
     - name: Install frontend dependencies
       run: npm ci
       working-directory: frontend
-    - name: Install frontend-nextjs dependencies
-      run: npm ci
-      working-directory: frontend-nextjs      
     - run: uv sync
       working-directory: backend
     - run: uv run bash scripts/generate-client.sh
@@ -50,7 +47,6 @@ jobs:
         git config --local user.email "github-actions@github.com"
         git config --local user.name "github-actions"
         git add frontend/src/client
-        git add frontend-nextjs/src/client
     # Same repo PRs
     - name: Push changes
       if: ( github.event_name != 'pull_request' || github.secret_source == 'Actions' )

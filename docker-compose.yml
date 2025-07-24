@@ -143,7 +143,8 @@ services:
     build:
       context: ./frontend
       args:
-        - VITE_API_URL=https://api.${DOMAIN?Variable not set}
+        - NEXT_PUBLIC_API_URL=https://api.${DOMAIN?Variable not set}
+        - NEXTAUTH_SECRET=${NEXTAUTH_SECRET?Variable not set}
         - NODE_ENV=production
     labels:
       - traefik.enable=true
@@ -162,37 +163,6 @@ services:
 
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
-
-  frontend-nextjs:
-    profiles: [ "nextjs" ]
-    image: '${DOCKER_IMAGE_FRONTEND_NEXTJS?Variable not set}:${TAG-latest}'
-    restart: always
-    networks:
-      - traefik-public
-      - default
-    build:
-      context: ./frontend-nextjs
-      args:
-        - NEXT_PUBLIC_API_URL=https://api.${DOMAIN?Variable not set}
-        - NEXTAUTH_SECRET=${NEXTAUTH_SECRET?Variable not set}
-        - NODE_ENV=production
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik-public
-      - traefik.constraint-label=traefik-public
-
-      - traefik.http.services.${STACK_NAME?Variable not set}-frontend-nextjs.loadbalancer.server.port=80
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-http.rule=Host(`dashboard.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-http.entrypoints=http
-
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-https.rule=Host(`dashboard.${DOMAIN?Variable not set}`)
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-https.entrypoints=https
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-https.tls=true
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-https.tls.certresolver=le
-
-      # Enable redirection for HTTP and HTTPS
-      - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-nextjs-http.middlewares=https-redirect
 volumes:
   app-db-data:
 
