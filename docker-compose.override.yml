@@ -95,11 +95,12 @@ services:
   frontend:
     restart: "no"
     ports:
-      - "3000:80"
+      - "3000:3000"
     build:
       context: ./frontend
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL?Variable not set}
+        - NEXTAUTH_URL=${NEXTAUTH_URL?Variable not set}
         - NEXTAUTH_SECRET=${NEXTAUTH_SECRET?Variable not set}
         - NODE_ENV=development
 
@@ -108,7 +109,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.playwright
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL?Variable not set}
+        - NEXTAUTH_URL=${NEXTAUTH_URL?Variable not set}
         - NODE_ENV=production
     ipc: host
     depends_on:
@@ -117,7 +118,7 @@ services:
     env_file:
       - .env
     environment:
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL?Variable not set}
+      - NEXTAUTH_URL=${NEXTAUTH_URL?Variable not set}
       - MAILCATCHER_HOST=http://mailcatcher:1080
       # For the reports when run locally
       - PLAYWRIGHT_HTML_HOST=0.0.0.0
